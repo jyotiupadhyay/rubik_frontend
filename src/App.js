@@ -5,6 +5,8 @@ import Header from './components/Header/Header';
 import Login from './components/Login/Login';
 import Logout from './components/Logout/Logout';
 import AddFavourites from './components/AddFovourites/AddFavourites';
+import ListOfFavourites from './components/ListOfFavourites/ListOfFavourites';
+import EditFavourites from './components/EditFavourites/EditFavourites';
 
 
 class App extends Component {
@@ -35,7 +37,9 @@ class App extends Component {
           {/* <Route path='/' component={Login} exact/> */}
           <Route path='/login' component={()=><Login validateUser={this.validateUser}/>}></Route>
           <Route path="/addFavourites" component={AddFavourites}/>
-          </Switch>
+          <Route path="/listOfFavourites" component={ListOfFavourites}/>
+          <Route path="/editFavourites" component={EditFavourites}/>
+          </Switch> 
         </HashRouter>
       </div>
     );

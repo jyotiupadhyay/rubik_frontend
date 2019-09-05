@@ -1,60 +1,68 @@
 import React, { Component } from "react";
 import axios from "axios";
-import "./AddFavourites.css";
+import "./EditFavourites.css";
 import config from "../../config.json";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import swal from "sweetalert";
 
-class AddFavourites extends Component {
+class EditFavourites extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      addFavourites: {
+      bankId: "",
+      favourites: {
         accountName: "",
         accountNumber: "",
-        bankName: "",
-        customerId: localStorage.getItem("customerId"),
-        bankId:localStorage.getItem("bankId"),
-      
+        bankName: ""
       }
     };
   }
-
-  handleChange = event => {
-    const { addFavourites } = this.state;
-    addFavourites[event.target.name] = event.target.value;
-    this.setState({ addFavourites });
-  };
-
-  handleSubmit = event => {
+  componentDidMount() {
+    const { editId } = this.state;
+    const data = JSON.parse(sessionStorage.getItem("favourites"));
+    this.setState({ favourites: data });
+  }
+  handleUpdate = event => {
+    console.log("@@@@");
     event.preventDefault();
-    const { addFavourites } = this.state;
-    console.log(addFavourites);
+    const { favourites } = this.state;
+    var favouriteId = localStorage.getItem("favouriteId");
+
+    let favouritesData = {
+      accountName: favourites.accountName,
+      accountNumber: favourites.accountNumber,
+      bankId: this.state.bankId
+    };
     axios
-      .post(config.url + "favourite/", addFavourites)
+      .put(config.url + "favourite/" + favouriteId, favouritesData)
       .then(response => {
         console.log(response.data);
-        swal(response.data.message);
-        this.props.history.push('/listOfFavourites');
+        swal("favourites updated successfully");
+        this.props.history.push("/listOfFavourites");
       })
       .catch(error => {
+        console.log(error);
         swal(error.response.data.message);
       });
   };
-  handleBankName = (event) => {
+  handleChange = event => {
+    const { favourites } = this.state;
+    favourites[event.target.name] = event.target.value;
+    this.setState({ favourites });
+  };
+
+  handleBankName = event => {
     if (event.target.value.length == 20) {
       axios
-        .post(
-          config.url + "bankDetails/" + this.state.addFavourites.accountNumber
-        )
+        .post(config.url + "bankDetails/" + this.state.favourites.accountNumber)
         .then(response => {
           console.log(response.data);
-          this.setState({ bankName: response.data.bankName });
-         localStorage.setItem("bankId",response.data.bankId);
-       console.log(response.data.bankId)
-
+          const { favourites } = this.state;
+          favourites.bankName = response.data.bankName;
+          this.setState({ favourites, bankId: response.data.bankId });
+          console.log(response.data.bankId);
         })
         .catch(error => {
           console.log(error);
@@ -62,6 +70,21 @@ class AddFavourites extends Component {
         });
     }
   };
+  handleDelete=(event)=>{
+      event.preventDefault();
+      const data = JSON.parse(sessionStorage.getItem("favourites"));
+      console.log(data)
+      axios
+        .delete(config.url + "login/" + data.favouriteId +'/'+data.customerId)
+        .then(response => {
+          console.log(response.data);
+          this.props.history.push('/listOfFavourites')
+        })
+        .catch(error => {
+          console.log(error);
+        });
+
+  }
   render() {
     return (
       <div className="container">
@@ -70,7 +93,7 @@ class AddFavourites extends Component {
           <div className="col-sm-12 col-md-4 col-md-offset-4">
             <div>
               <h3 className="col-md-12 col-sm-3 text-center login-title">
-                Add Favourite account
+                Edit Favourite account
               </h3>
             </div>
 
@@ -81,6 +104,7 @@ class AddFavourites extends Component {
                   type="text"
                   id="accountName"
                   name="accountName"
+                  value={this.state.favourites.accountName}
                   className="form-control user-field"
                   placeholder="Enter the Account name"
                   onChange={this.handleChange}
@@ -93,6 +117,7 @@ class AddFavourites extends Component {
                     type="text"
                     id="accountNumber"
                     name="accountNumber"
+                    value={this.state.favourites.accountNumber}
                     className="form-control user-field"
                     placeholder="Enter the IBAN/ Account number"
                     onChange={this.handleChange}
@@ -104,7 +129,7 @@ class AddFavourites extends Component {
                 <input
                   type="text"
                   id="bankName"
-                  value={this.state.bankName}
+                  value={this.state.favourites.bankName}
                   name="bankName"
                   className="form-control user-field"
                   placeholder="Enter the bank"
@@ -115,12 +140,20 @@ class AddFavourites extends Component {
                 />
 
                 <button
-                  id="btn2"
+                  id="btn4"
                   className="btn btn-lg btn-primary btn-block"
                   type="submit"
-                  onClick={this.handleSubmit}
+                  onClick={this.handleUpdate}
                 >
                   Save
+                </button>
+                <button
+                  id="btn5"
+                  className="btn btn-lg btn-primary btn-block"
+                  type="submit"
+                  onClick={this.handleDelete}
+                >
+                  delete
                 </button>
               </form>
             </div>
@@ -132,4 +165,4 @@ class AddFavourites extends Component {
   }
 }
 
-export default AddFavourites;
+export default EditFavourites;
